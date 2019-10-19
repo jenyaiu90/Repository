@@ -17,15 +17,6 @@ public class MyView extends View
 	{
 		super.onDraw(canvas);
 		Paint paint = new Paint();
-		paint.setColor(Color.RED);
-		paint.setStrokeWidth(5);
-		paint.setStyle(Paint.Style.STROKE);
-		for (int i = 10; i < canvas.getHeight() + canvas.getWidth() - 1; i += 10)
-		{
-			canvas.drawLine(i > canvas.getHeight() ? i - canvas.getHeight() : 0,
-				i > canvas.getHeight() ? canvas.getHeight() : i,
-				i > canvas.getWidth() ? canvas.getWidth() : i,
-				i > canvas.getWidth() ? i - canvas.getWidth() : 0, paint);
-		}
+		canvas.drawLine(0, 0, canvas.getWidth(), canvas.getHeight(), paint);
 	}
 }
