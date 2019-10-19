@@ -17,9 +17,12 @@ public class MyView extends View
 	{
 		super.onDraw(canvas);
 		Paint paint = new Paint();
-		for (int i = 0; i < canvas.getHeight(); i += 10)
-		{
-			canvas.drawLine(0, i, canvas.getWidth(), i, paint);
-		}
+		paint.setColor(Color.YELLOW);
+		paint.setStyle(Paint.Style.FILL);
+		canvas.drawCircle(300, 300, 200, paint);
+		paint.setColor(Color.RED);
+		paint.setStyle(Paint.Style.STROKE);
+		paint.setStrokeWidth(20);
+		canvas.drawCircle(300, 300, 200, paint);
 	}
 }
