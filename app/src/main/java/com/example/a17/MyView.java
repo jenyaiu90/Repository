@@ -47,7 +47,7 @@ public class MyView extends View
 		paint.setColor(Color.BLUE);
 		for (x = xmin; x < xmax; x += h)
 		{
-			y = Math.abs(x);
+			y = -Math.pow(x, 3);
 			xe = x0 + k * x;
 			ye = y0 - k * y;
 			if (first)
@@ -66,7 +66,7 @@ public class MyView extends View
 		paint.setColor(Color.RED);
 		for (x = xmin; x < xmax; x += h)
 		{
-			y = -x * x + 3;
+			y = Math.pow(x, 3);
 			xe = x0 + k * x;
 			ye = y0 - k * y;
 			if (first)
