@@ -12,13 +12,14 @@ public class MyView extends View
 	{
 		super(context);
 	}
+	Paint paint = new Paint();
+	float x = 0;
 	@Override
 	protected void onDraw(Canvas canvas)
 	{
 		super.onDraw(canvas);
-		Paint paint = new Paint();
-		paint.setColor(Color.BLUE);
-		paint.setStyle(Paint.Style.FILL);
-		canvas.drawRect(100, 100, 300, 300, paint);
+		canvas.drawCircle(x, 300, 20, paint);
+		x += 0.5f;
+		invalidate();
 	}
 }
