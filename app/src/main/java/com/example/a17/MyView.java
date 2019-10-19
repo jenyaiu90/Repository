@@ -9,8 +9,8 @@ import android.view.View;
 
 public class MyView extends View
 {
-	double xe, ye, w, x, y, h = 0.1, xmin = -4, xmax = 4;
-	int k = 100;
+	double xe, ye, w, x, y, h = 0.1, xmin = -10, xmax = 10;
+	int k = 50;
 	public MyView(Context context)
 	{
 		super(context);
@@ -47,7 +47,7 @@ public class MyView extends View
 		paint.setColor(Color.BLUE);
 		for (x = xmin; x < xmax; x += h)
 		{
-			y = -Math.pow(x, 3);
+			y = 3 * Math.sin(x);
 			xe = x0 + k * x;
 			ye = y0 - k * y;
 			if (first)
@@ -66,7 +66,7 @@ public class MyView extends View
 		paint.setColor(Color.RED);
 		for (x = xmin; x < xmax; x += h)
 		{
-			y = Math.pow(x, 3);
+			y = 5 * Math.cos(x * x);
 			xe = x0 + k * x;
 			ye = y0 - k * y;
 			if (first)
