@@ -9,32 +9,42 @@ import android.view.View;
 public class MyView extends View
 {
 	Paint paint = new Paint();
-	int N = 10;
+	int N = 30;
 	float x[] = new float[N];
 	float y[] = new float[N];
 	float vx[] = new float[N];
 	float vy[] = new float[N];
+	boolean started = false;
 	public MyView(Context context)
 	{
 		super(context);
-		for (int i = 0; i < N; i++)
-		{
-			x[i] = (float)(Math.random() * 500);
-			y[i] = (float)(Math.random() * 500);
-			vx[i] = (float)(Math.random() * 6 - 3);
-			vy[i] = (float)(Math.random() * 6 - 3);
-		}
 	}
 	@Override
 	protected void onDraw(Canvas canvas)
 	{
 		super.onDraw(canvas);
-		for (int i = 0; i < N; i++)
+		if (!started)
 		{
-			canvas.drawCircle(x[i], y[i], 20, paint);
+			for (int i = 0; i < N; i++)
+			{
+				x[i] = (float)(Math.random() * canvas.getWidth());
+				y[i] = (float)(Math.random() * canvas.getHeight());
+				vx[i] = (float)(Math.random() * 6 - 3);
+				vy[i] = (float)(Math.random() * 6 - 3);
+			}
+			started = true;
 		}
 		for (int i = 0; i < N; i++)
 		{
+			canvas.drawCircle(x[i], y[i], 20, paint);
+			if (x[i] <= 20 || x[i] >= canvas.getWidth() - 20)
+			{
+				vx[i] = -vx[i];
+			}
+			if (y[i] <= 20 || y[i] >= canvas.getHeight() - 20)
+			{
+				vy[i] = -vy[i];
+			}
 			x[i] += vx[i];
 			y[i] += vy[i];
 		}
