@@ -17,6 +17,9 @@ public class MyView extends View
 	{
 		super.onDraw(canvas);
 		Paint paint = new Paint();
-		canvas.drawLine(0, 0, canvas.getWidth(), canvas.getHeight(), paint);
+		for (int i = 0; i < canvas.getHeight(); i += 10)
+		{
+			canvas.drawLine(0, i, canvas.getWidth(), i, paint);
+		}
 	}
 }
