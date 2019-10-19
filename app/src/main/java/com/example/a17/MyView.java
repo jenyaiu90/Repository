@@ -1,84 +1,108 @@
 package com.example.a17;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.os.CountDownTimer;
 import android.view.View;
 
+@SuppressLint("DrawAllocation")
 public class MyView extends View
 {
-	double xe, ye, w, x, y, h = 0.1, xmin = -10, xmax = 10;
-	int k = 50;
+	int N = 5, z = -1;
+	int[] x = new int[N], y = new int[N];
+	int[] vx = new int[N], vy = new int[N];
+	int[] L = new int[N], R = new int[N];
+	int[] Red = new int[N], Green = new int[N], Blue = new int[N];
+	double a = 0, ha = Math.PI / 180;
+
 	public MyView(Context context)
 	{
 		super(context);
+		makeBalls();
+		MyTimer timer = new MyTimer();
+		timer.start();
 	}
+
+	void fillArrayRandom(int[] a, int min, int max)
+	{
+		for (int i = 0; i < a.length; i++)
+		{
+			a[i] = (int)(Math.random() * (max - min + 1) + min);
+		}
+	}
+
+	void makeBalls()
+	{
+		fillArrayRandom(x, 50, 250);
+		fillArrayRandom(y, 50, 250);
+		fillArrayRandom(vx, -50, 100);
+		fillArrayRandom(vy, -50, 100);
+		fillArrayRandom(L, 3, 10);
+		fillArrayRandom(Red, 50, 255);
+		fillArrayRandom(Green, 50, 255);
+		fillArrayRandom(Blue, 50, 255);
+		fillArrayRandom(R, 20, 40);
+	}
+
+	void moveBalls()
+	{
+		for (int i = 0; i < N; i++)
+		{
+			if (i % 2 == 0)
+			{
+				x[i] = this.getWidth() / 2 + (int) (L[i] * vx[i] * Math.cos(a));
+				y[i] = this.getHeight() / 2 + (int) (z * L[i] * vy[i] * Math.sin(a));
+			}
+			else
+			{
+				x[i] = this.getWidth() / 2 + (int) (L[i] * vx[i] * Math.cos(a));
+				y[i] = this.getHeight() / 2 + (int) (L[i] * vy[i] * Math.sin(a));
+			}
+		}
+		a += ha;
+	}
+
 	@Override
 	protected void onDraw(Canvas canvas)
 	{
-		int x0 = canvas.getWidth() / 2;
-		int y0 = canvas.getHeight() / 2;
-
 		Paint paint = new Paint();
-		paint.setStrokeWidth(5);
-		paint.setColor(Color.BLACK);
-		paint.setStyle(Paint.Style.STROKE);
-		paint.setTextSize(30);
-
-		canvas.drawLine(x0, 0, x0, canvas.getHeight(), paint);
-		canvas.drawLine(0, y0, canvas.getWidth(), y0, paint);
-		canvas.drawLine(x0, 0, x0 - 10, 20, paint);
-		canvas.drawLine(x0, 0, x0 + 10, 20, paint);
-		canvas.drawLine(canvas.getWidth(), y0, canvas.getWidth() - 20, y0 - 10, paint);
-		canvas.drawLine(canvas.getWidth(), y0, canvas.getWidth() - 20, y0 + 10, paint);
-		canvas.drawLine(x0 + k, y0 - 10, x0 + k, y0 + 10, paint);
-		canvas.drawLine(x0 - 10, y0 - k, x0 + 10, y0 - k, paint);
-		canvas.drawText("Y", x0 - 40, 35, paint);
-		canvas.drawText("X", canvas.getWidth() - 40, y0 + 40, paint);
-		canvas.drawText("0", x0 + 10, y0 + 30, paint);
-		paint.setTextAlign(Paint.Align.CENTER);
-		canvas.drawText("1", x0 + k, y0 - 30, paint);
-		canvas.drawText("1", x0 - 30, y0 - k, paint);
-
-		Path path = new Path();
-		boolean first = true;
-		paint.setColor(Color.BLUE);
-		for (x = xmin; x < xmax; x += h)
-		{
-			y = 3 * Math.sin(x);
-			xe = x0 + k * x;
-			ye = y0 - k * y;
-			if (first)
-			{
-				path.moveTo((float)xe, (float)ye);
-				first = false;
-			}
-			else
-			{
-				path.lineTo((float)xe, (float)ye);
-			}
-			canvas.drawPath(path, paint);
-		}
-		Path path2 = new Path();
-		first = true;
+		paint.setTextSize(30.0f);
 		paint.setColor(Color.RED);
-		for (x = xmin; x < xmax; x += h)
+		canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2, 70, paint);
+		for (int i = 0; i < N; i++)
 		{
-			y = 5 * Math.cos(x * x);
-			xe = x0 + k * x;
-			ye = y0 - k * y;
-			if (first)
-			{
-				path2.moveTo((float)xe, (float)ye);
-				first = false;
-			}
-			else
-			{
-				path2.lineTo((float)xe, (float)ye);
-			}
-			canvas.drawPath(path2, paint);
+			paint.setColor(Color.argb(200, Red[i], Green[i], Blue[i]));
+			canvas.drawCircle(x[i], y[i], R[i], paint);
+			paint.setColor(Color.BLACK);
+			canvas.drawText("P " + i + " (" + x[i] + ", " + y[i] + ")", x[i] + 10, y[i] - 15, paint);
+		}
+	}
+
+	void nextFrame()
+	{
+		moveBalls();
+		invalidate();
+	}
+
+	class MyTimer extends CountDownTimer
+	{
+		MyTimer()
+		{
+			super(1000000, 1);
+		}
+		@Override
+		public void onTick(long millisUntilFinished)
+		{
+			nextFrame();
+		}
+		@Override
+		public void onFinish()
+		{
+
 		}
 	}
 }
