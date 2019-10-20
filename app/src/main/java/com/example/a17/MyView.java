@@ -12,7 +12,7 @@ import android.view.View;
 public class MyView extends View
 {
 	boolean first = true;
-	int N = 2, M = 100; //Количество планет, масса Солнца
+	int N = 3, M = 100; //Количество планет, масса Солнца
 	double[] x = new double[N], y = new double[N]; //Координаты планет
 	double[] vx = new double[N], vy = new double[N]; //Скорости планет
 	int[] Red = new int[N], Green = new int[N], Blue = new int[N]; //Цвета планет
@@ -51,7 +51,7 @@ public class MyView extends View
 			vx[i] = 0;
 			vy[i] = 0;
 		}
-		fillArrayRandom(m, 10, 50);
+		fillArrayRandom(m, 25, 50);
 		fillArrayRandom(Red, 50, 255);
 		fillArrayRandom(Green, 50, 255);
 		fillArrayRandom(Blue, 50, 255);
@@ -80,7 +80,7 @@ public class MyView extends View
 				dx = x[j] - x[i];
 				dy = y[j] - y[i];
 				//Если планеты слишком близко
-				if (Math.abs(dx) + Math.abs(dy) < 10)
+				if (Math.abs(dx) + Math.abs(dy) < 15)
 				{
 					continue;
 				}
