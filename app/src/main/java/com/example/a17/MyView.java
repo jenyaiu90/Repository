@@ -5,24 +5,22 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.os.CountDownTimer;
 import android.view.View;
 
 @SuppressLint("DrawAllocation")
 public class MyView extends View
 {
-	int N = 5, z = -1;
-	int[] x = new int[N], y = new int[N];
-	int[] vx = new int[N], vy = new int[N];
-	int[] L = new int[N], R = new int[N];
-	int[] Red = new int[N], Green = new int[N], Blue = new int[N];
-	double a = 0, ha = Math.PI / 180;
+	boolean first = true;
+	int N = 2, M = 100; //Количество планет, масса Солнца
+	double[] x = new double[N], y = new double[N]; //Координаты планет
+	double[] vx = new double[N], vy = new double[N]; //Скорости планет
+	int[] Red = new int[N], Green = new int[N], Blue = new int[N]; //Цвета планет
+	int[] m = new int[N]; //Массы планет
 
 	public MyView(Context context)
 	{
 		super(context);
-		makeBalls();
 		MyTimer timer = new MyTimer();
 		timer.start();
 	}
@@ -35,50 +33,115 @@ public class MyView extends View
 		}
 	}
 
+	void fillArrayRandom(double[] a, int min, int max)
+{
+	for (int i = 0; i < a.length; i++)
+	{
+		a[i] = (int)(Math.random() * (max - min + 1) + min);
+	}
+}
+
 	void makeBalls()
 	{
-		fillArrayRandom(x, 50, 250);
-		fillArrayRandom(y, 50, 250);
-		fillArrayRandom(vx, -50, 100);
-		fillArrayRandom(vy, -50, 100);
-		fillArrayRandom(L, 3, 10);
+		fillArrayRandom(x, 0, this.getWidth());
+		fillArrayRandom(y, 0, this.getHeight());
+		for (int i = 0; i < N; i++)
+		{
+			//Изначально планеты неподвижны
+			vx[i] = 0;
+			vy[i] = 0;
+		}
+		fillArrayRandom(m, 10, 50);
 		fillArrayRandom(Red, 50, 255);
 		fillArrayRandom(Green, 50, 255);
 		fillArrayRandom(Blue, 50, 255);
-		fillArrayRandom(R, 20, 40);
 	}
 
 	void moveBalls()
 	{
 		for (int i = 0; i < N; i++)
 		{
-			if (i % 2 == 0)
+			double dx, dy, A, Ax = 0, Ay = 0;
+			dx = this.getWidth() / 2 - x[i];
+			dy = this.getHeight() / 2 - y[i];
+			//Если планета не слишком близко к Солнцу
+			if (Math.abs(dx) + Math.abs(dy) >= 10)
 			{
-				x[i] = this.getWidth() / 2 + (int) (L[i] * vx[i] * Math.cos(a));
-				y[i] = this.getHeight() / 2 + (int) (z * L[i] * vy[i] * Math.sin(a));
+				A = M / ((Math.pow(dx, 2) + Math.pow(dy, 2)) / 20); //Ускорение, придаваемое планете Солнцем
+				Ax = (dx < 0 ? -1 : 1) * A * (dx == 0 ? 0 : Math.cos(Math.atan(dy / dx)));
+				Ay = (dy < 0 ? -1 : 1) * A * (dy == 0 ? 0 : Math.cos(Math.atan(dx / dy)));
 			}
-			else
+			for (int j = 0; j < N; j++)
 			{
-				x[i] = this.getWidth() / 2 + (int) (L[i] * vx[i] * Math.cos(a));
-				y[i] = this.getHeight() / 2 + (int) (L[i] * vy[i] * Math.sin(a));
+				if (i == j)
+				{
+					continue;
+				}
+				dx = x[j] - x[i];
+				dy = y[j] - y[i];
+				//Если планеты слишком близко
+				if (Math.abs(dx) + Math.abs(dy) < 10)
+				{
+					continue;
+				}
+				A = m[j] / ((Math.pow(dx, 2) + Math.pow(dy, 2)) / 20); //Ускорение, придаваемое планете №i планетой №j
+				Ax += (dx < 0 ? -1 : 1) * A * (dx == 0 ? 0 : Math.cos(Math.atan(dy / dx)));
+				Ay += (dy < 0 ? -1 : 1) * A * (dy == 0 ? 0 : Math.cos(Math.atan(dx / dy)));
 			}
+			vx[i] += Ax;
+			vy[i] += Ay;
+			if (x[i] <= m[i] || x[i] >= this.getWidth() - m[i]) //Столкновение с границами экрана
+			{
+				vx[i] = -vx[i];
+				if (x[i] <= m[i]) //Радиус планеты равен массе
+				{
+					x[i] = m[i];
+				}
+				else
+				{
+					x[i] = this.getWidth() - m[i];
+				}
+				//Скорость уменьшается на 10% (иначе на экране творится какая-то вакханалия)
+				vx[i] *= 0.8;
+				vy[i] *= 0.8;
+			}
+			if (y[i] <= m[i] || y[i] >= this.getHeight() - m[i])
+			{
+				vy[i] = -vy[i];
+				if (y[i] <= m[i])
+				{
+					y[i] = m[i];
+				}
+				else
+				{
+					y[i] = this.getHeight() - m[i];
+				}
+				vx[i] *= 0.8;
+				vy[i] *= 0.8;
+			}
+			x[i] += vx[i];
+			y[i] += vy[i];
 		}
-		a += ha;
 	}
 
 	@Override
 	protected void onDraw(Canvas canvas)
 	{
+		if (first)
+		{
+			first = false;
+			makeBalls();
+		}
 		Paint paint = new Paint();
 		paint.setTextSize(30.0f);
 		paint.setColor(Color.RED);
-		canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2, 70, paint);
+		canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2, M, paint);
 		for (int i = 0; i < N; i++)
 		{
 			paint.setColor(Color.argb(200, Red[i], Green[i], Blue[i]));
-			canvas.drawCircle(x[i], y[i], R[i], paint);
+			canvas.drawCircle((int)x[i], (int)y[i], m[i], paint);
 			paint.setColor(Color.BLACK);
-			canvas.drawText("P " + i + " (" + x[i] + ", " + y[i] + ")", x[i] + 10, y[i] - 15, paint);
+			canvas.drawText("P " + i + " (" + (int)x[i] + ", " + (int)y[i] + ")", (int)x[i] + 10, (int)y[i] - 15, paint);
 		}
 	}
 
