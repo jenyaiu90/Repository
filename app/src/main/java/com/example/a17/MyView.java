@@ -18,6 +18,7 @@ public class MyView extends View
 	double[] fi = new double[N];
 	int t = 0, deltaT = 1;
 	int[][] color = new int[N][3];
+	int[] size = new int[N];
 
 	void makePendulum()
 	{
@@ -29,6 +30,7 @@ public class MyView extends View
 			l_min += 50;
 			w[i] = Math.sqrt(g/l[i]);
 
+			size[i] = (int)(Math.random() * 10) + 10;
 			for (int j = 0; j < 3; j++)
 			{
 				color[i][j] = (int)(Math.random() * 255);
@@ -67,7 +69,7 @@ public class MyView extends View
 			paint.setColor(Color.BLUE);
 			canvas.drawLine((float)x0, (float)y0, (float)(x[i] + x0), (float)(y[i]+ y0), paint);
 			paint.setColor(Color.rgb(color[i][0], color[i][1], color[i][2]));
-			canvas.drawCircle((float)(x[i] + x0), (float)(y[i] + y0), 20, paint);
+			canvas.drawCircle((float)(x[i] + x0), (float)(y[i] + y0), size[i], paint);
 		}
 	}
 
@@ -81,7 +83,7 @@ public class MyView extends View
 	{
 		MyTimer()
 		{
-			super(100000, 30);
+			super(1000000, 30);
 		}
 		@Override
 		public void onTick(long millisUntilFinished)
