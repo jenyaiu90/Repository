@@ -59,17 +59,19 @@ public class CellsActivity extends Activity implements OnClickListener, OnLongCl
     @Override
     public void onClick(View v)
     {
-        //Эту строку нужно удалить
-        Stub.show(this, "Добавьте код в функцию активности onClick() - реакцию на нажатие на клетку");
+        Button tappedCell = (Button) v;
 
-        Button tappedCell = (Button)v;
-
-        //Получаем координтаты нажатой клетки
         int tappedX = getX(tappedCell);
         int tappedY = getY(tappedCell);
-        //ADD YOUR CODE HERE
-        //....
 
+        for (int x = 0; x < WIDTH; x++)
+        {
+            cells[tappedY][x].setBackgroundColor(Color.RED);
+        }
+        for (int y = 0; y < HEIGHT; y++)
+        {
+            cells[y][tappedX].setBackgroundColor(Color.RED);
+        }
     }
 
 	/*
