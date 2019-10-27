@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.GridLayout;
 
@@ -18,9 +19,11 @@ import task.Task;
 
 public class CellsActivity extends Activity implements OnClickListener, OnLongClickListener
 {
-    private int WIDTH = 10;
-    private int HEIGHT = 10;
-    private Button[][] cells;
+    private int WIDTH = 13;
+    private int HEIGHT = WIDTH; //Я напутал, где ширина, где высота, поэтому программа работает только с квадратным полем
+    private Button cells[][];
+    boolean[][] bombs, opened, flags; //Есть ли тут бомба, открыта ли клетка, установлен ли на клетке флаг
+    private boolean start = false, end = false; //Началась ли игра? Закончилась ли игра?
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -28,49 +31,210 @@ public class CellsActivity extends Activity implements OnClickListener, OnLongCl
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cells);
         makeCells();
-        generate();
     }
 
-    void generate()
+    void easterEgg()
     {
-        //Эту строку нужно удалить
-        Task.showMessage(this, "Добавьте код в функцию активности generate() для генерации клеточного поля");
-
-        for (int i = 0; i < HEIGHT; i++)
+        for (int i = 0; i < WIDTH; i++)
         {
-            for (int j = 0; j < WIDTH; j++)
+            bombs[0][i] = false;
+            bombs[1][i] = (i < 2 || i > 2 && i < 6 ||
+                i > 6 && i < 9 || i == 11);
+            bombs[2][i] = (i == 0 || i == 3 ||
+                i == 5 || i == 7 || i == 9 || i > 10);
+            bombs[3][i] = (i < 2 || i > 3 && i < 6 ||
+                i == 7 || i == 11);
+            bombs[4][i] = (i == 1 || i == 5 || i == 7 || i == 11);
+            bombs[5][i] = (i < 2 || i == 5 ||
+                i == 7 || i > 10);
+            bombs[6][i] = false;
+
+            bombs[7][i] = (i == 1 || i == 8 || i == 11);
+            bombs[8][i] = (i == 0 || i == 7 || i == 8 || i == 12);
+            bombs[9][i] = (i == 0 || i == 3 || i == 4 ||
+                i == 8 || i == 12);
+            bombs[10][i] = (i == 0 || i == 8 || i == 12);
+            bombs[11][i] = (i == 1 || i > 6 && i < 10 || i == 11);
+            bombs[12][i] = false;
+        }
+    }
+
+    void generate(int x, int y)
+    {
+        bombs = new boolean[HEIGHT][WIDTH];
+        opened = new boolean[HEIGHT][WIDTH];
+        flags = new boolean[HEIGHT][WIDTH];
+        for (int i = 0; i < WIDTH; i++)
+        {
+            for (int j = 0; j < HEIGHT; j++)
             {
-                if (Math.random() >= 0.5)
+                bombs[i][j] = (Math.random() < 0.3);
+                opened[i][j] = false;
+                flags[i][j] = false;
+                cells[i][j].setBackgroundColor(Color.WHITE);
+            }
+        }
+        if (Math.random() <= 0.01)
+        {
+            easterEgg();
+            return;
+        }
+        bombs[y][x] = false; //Под первой открытой игроком клеткой не должно быть бомбы
+        for (int i = y - 1; i <= y + 1; i++)
+        {
+            for (int j = x - 1; j <= x + 1; j++)
+            {
+                if (i < 0 || j < 0 || i >= HEIGHT || j >= WIDTH)
                 {
-                    cells[i][j].setBackgroundColor(Color.YELLOW);
+                    continue;
                 }
+                bombs[i][j] = false; //Под клетками, граничащими с первой открытой также не должно быть бомб
             }
         }
     }
 
-    @Override
-    public boolean onLongClick(View v)
+    void flag(int x, int y) //Установка/снятие флага
     {
-        //Эту строку нужно удалить
-        Stub.show(this, "Добавьте код в функцию активности onLongClick() - реакцию на долгое нажатие на клетку");
-        return false;
+        if (opened[y][x]) //Нельзя установить флаг на открытую клетку
+        {
+            return;
+        }
+        if (flags[y][x]) //Снятие флага
+        {
+            cells[y][x].setBackgroundColor(Color.WHITE);
+            flags[y][x] = false;
+        }
+        else //Установка флага
+        {
+            cells[y][x].setBackgroundColor(Color.YELLOW);
+            flags[y][x] = true;
+        }
+    }
+
+    @Override
+    public boolean onLongClick(View v) //Длинное нажатие — установка/снятие флага
+    {
+        if (end) //Нельзя установить флаг после конца игры
+        {
+            return true;
+        }
+        Button tappedCell = (Button)v;
+
+        int tappedX = getX(tappedCell);
+        int tappedY = getY(tappedCell);
+
+        flag(tappedX, tappedY);
+
+        return true;
+    }
+
+    int checkBombs(int x, int y) //Проверка количества бомб в соседних клетках
+    {
+        int counter = 0;
+        for (int i = y - 1; i <= y + 1; i++)
+        {
+            for (int j = x - 1; j <= x + 1; j++)
+            {
+                if (i < 0 || j < 0 || i >= HEIGHT || j >= WIDTH)
+                {
+                    continue;
+                }
+                if (bombs[i][j])
+                {
+                    counter++;
+                }
+            }
+        }
+        if (counter == 0) //Если вокруг нет ни одной бомбы, открыть все соседние клетки
+        {
+            for (int i = y - 1; i <= y + 1; i++)
+            {
+                for (int j = x - 1; j <= x + 1; j++)
+                {
+                    if (i < 0 || j < 0 || i >= HEIGHT || j >= WIDTH)
+                    {
+                        continue;
+                    }
+                    open(j, i);
+                }
+            }
+        }
+        return counter;
+    }
+
+    void open(int x, int y) //Открытие клетки
+    {
+        if (opened[y][x]) //Нельзя повторно открыть клетку
+        {
+            return;
+        }
+        opened[y][x] = true;
+        if (bombs[y][x]) //Попадание в бомбу
+        {
+            for (int i = 0; i < WIDTH; i++)
+            {
+                for (int j = 0; j < HEIGHT; j++)
+                {
+                    if (bombs[i][j])
+                    {
+                        cells[i][j].setBackgroundColor(Color.RED);
+                    }
+                }
+            }
+            Task.showMessage(this, "You lose!");
+            end = true;
+        }
+        else
+        {
+            cells[y][x].setBackgroundColor(Color.GREEN);
+            cells[y][x].setText(Integer.toString(checkBombs(x, y)));
+        }
     }
 
     @Override
     public void onClick(View v)
     {
-        Button tappedCell = (Button) v;
+        if (end) //Нельзя открывать клетки после конца игры
+        {
+            return;
+        }
+        Button tappedCell = (Button)v;
 
         int tappedX = getX(tappedCell);
         int tappedY = getY(tappedCell);
-
-        for (int x = 0; x < WIDTH; x++)
+        if (!start) //Если это первая нажатая клетка, запустить генерацию бомб
         {
-            cells[tappedY][x].setBackgroundColor(Color.RED);
+            start = true;
+            generate(tappedX, tappedY);
         }
-        for (int y = 0; y < HEIGHT; y++)
+        if (flags[tappedY][tappedX]) //Если на клетке установлен флаг, не открывать её, а снять флаг
         {
-            cells[y][tappedX].setBackgroundColor(Color.RED);
+            flag(tappedX, tappedY);
+        }
+        else
+        {
+            open(tappedX, tappedY);
+        }
+        //Далее идёт проверка на победу
+        if (end) //Нельзя победить после конца игры
+        {
+            return;
+        }
+        boolean clear = true;
+        for (int i = 0; i < WIDTH; i++)
+        {
+            for (int j = 0; j < HEIGHT; j++)
+            {
+                if (!opened[i][j] && !bombs[i][j]) //Если существует неотрытая клетка без бомбы, не победа.
+                {
+                    clear = false;
+                }
+            }
+        }
+        if (clear)
+        {
+            Task.showMessage(this, "You win!");
+            end = true;
         }
     }
 
@@ -92,7 +256,7 @@ public class CellsActivity extends Activity implements OnClickListener, OnLongCl
     void makeCells()
     {
         cells = new Button[HEIGHT][WIDTH];
-        GridLayout cellsLayout = (GridLayout) findViewById(R.id.CellsLayout);
+        GridLayout cellsLayout = (GridLayout)findViewById(R.id.CellsLayout);
         cellsLayout.removeAllViews();
         cellsLayout.setColumnCount(HEIGHT);
         for (int i = 0; i < HEIGHT; i++)
