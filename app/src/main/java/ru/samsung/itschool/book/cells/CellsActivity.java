@@ -2,6 +2,7 @@ package ru.samsung.itschool.book.cells;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 
 import android.view.LayoutInflater;
@@ -35,13 +36,14 @@ public class CellsActivity extends Activity implements OnClickListener, OnLongCl
         //Эту строку нужно удалить
         Task.showMessage(this, "Добавьте код в функцию активности generate() для генерации клеточного поля");
 
-        int num = 1;
         for (int i = 0; i < HEIGHT; i++)
         {
             for (int j = 0; j < WIDTH; j++)
             {
-                cells[i][j].setText(Integer.toString(num));
-                num++;
+                if (Math.random() >= 0.5)
+                {
+                    cells[i][j].setBackgroundColor(Color.YELLOW);
+                }
             }
         }
     }
