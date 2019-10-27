@@ -46,13 +46,18 @@ public class MyView extends View
 
 	Paint paint = new Paint();
 
-	@Override
-	protected void onDraw(Canvas canvas)
+	void drawBalls(Canvas canvas)
 	{
 		for (int i = 0; i < N; i++)
 		{
 			canvas.drawCircle(x[i], y[i], 20, paint);
 		}
+	}
+
+	@Override
+	protected void onDraw(Canvas canvas)
+	{
+		drawBalls(canvas);
 		add(x, vx);
 		add(y, vy);
 		invalidate();
