@@ -35,12 +35,13 @@ public class CellsActivity extends Activity implements OnClickListener, OnLongCl
         //Эту строку нужно удалить
         Task.showMessage(this, "Добавьте код в функцию активности generate() для генерации клеточного поля");
 
+        int num = 1;
         for (int i = 0; i < HEIGHT; i++)
         {
             for (int j = 0; j < WIDTH; j++)
             {
-                //ADD YOUR CODE HERE
-                //....
+                cells[i][j].setText(Integer.toString(num));
+                num++;
             }
         }
     }
