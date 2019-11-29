@@ -4,8 +4,13 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.1"
     defaultConfig {
+<<<<<<< HEAD
         applicationId "ru.samsung.itschool.book.intents"
         minSdkVersion 15
+=======
+        applicationId "ru.samsung.itschool.book.implicitintent"
+        minSdkVersion 10
+>>>>>>> develop
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"

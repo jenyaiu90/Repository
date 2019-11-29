@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<<<<<<< HEAD
     package="ru.samsung.itschool.book.intents">
+=======
+    package="ru.samsung.itschool.book.implicitintent">
+>>>>>>> develop
 
     <application
         android:allowBackup="true"
@@ -16,6 +20,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+<<<<<<< HEAD
         <activity
             android:name=".MainActivity2"
             android:label="MainActivity2" >
@@ -28,6 +33,8 @@
             android:name=".ComeBackActivity"
             android:label="ComeBackActivity" >
         </activity>
+=======
+>>>>>>> develop
     </application>
 
 </manifest>
