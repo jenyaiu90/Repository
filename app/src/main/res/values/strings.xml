@@ -1,8 +1,5 @@
 <resources>
-<<<<<<< HEAD
-    <string name="app_name">Intents</string>
-=======
-    <string name="app_name">ImplicitIntent</string>
-    <string name="speech_error">Текст не распознан.</string>
->>>>>>> develop
+	<string name="app_name">LoadURL</string>
+	<string name="loading">Loading&#8230;</string>
+	<string name="fail">Failure</string>
 </resources>
