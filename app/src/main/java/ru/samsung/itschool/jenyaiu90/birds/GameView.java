@@ -9,9 +9,11 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.CountDownTimer;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 
-public class GameView extends View
+public class GameView extends SurfaceView implements SurfaceHolder.Callback
 {
 	class Timer extends CountDownTimer
 	{
@@ -38,9 +40,38 @@ public class GameView extends View
 	private boolean bonus, two;
 	private boolean over, pause;
 	private int level = 1;
+	private DrawThread dt;
+	@Override
+	public void surfaceCreated(SurfaceHolder holder)
+	{
+	}
+	@Override
+	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
+	{
+		// изменение размеров SurfaceView
+	}
+	@Override
+	public void surfaceDestroyed(SurfaceHolder holder)
+	{
+		dt.requestStop();
+		boolean retry = true;
+		while (retry)
+		{
+			try
+			{
+				dt.join();
+				retry = false;
+			}
+			catch (InterruptedException e)
+			{
+				//
+			}
+		}
+	}
 	public GameView(Context context)
 	{
 		super(context);
+		getHolder().addCallback(this);
 		Bitmap b = BitmapFactory.decodeResource(getResources(), R.drawable.player);
 		int w = b.getWidth() / 5;
 		int h = b.getHeight() / 3;
@@ -62,6 +93,8 @@ public class GameView extends View
 			}
 		}
 		teleportEnemy();
+		dt = new DrawThread(getContext(),getHolder());
+		dt.start();
 		Timer timer = new Timer();
 		timer.start();
 	}
@@ -76,23 +109,6 @@ public class GameView extends View
 	public void onDraw(Canvas canvas)
 	{
 		super.onDraw(canvas);
-		Paint p = new Paint();
-		p.setAntiAlias(true);
-		p.setTextSize(55.f);
-		p.setColor(Color.WHITE);
-		canvas.drawARGB(250, 127, 199, 255);
-		playerBird.draw(canvas);
-		enemyBird.draw(canvas);
-		canvas.drawText(points + "", viewWidth - 100, 70, p);
-		canvas.drawText(level + "", 300, 70, p);
-		if (over)
-		{
-			canvas.drawText("Game over", 200, 200, p);
-		}
-		else if (pause)
-		{
-			canvas.drawText("Pause", 200, 200, p);
-		}
 	}
 	protected void update()
 	{
@@ -145,6 +161,13 @@ public class GameView extends View
 		{
 			over = true;
 		}
+		dt.playerBird = playerBird;
+		dt.enemyBird = enemyBird;
+		dt.points = points;
+		dt.viewWidth = viewWidth;
+		dt.level = level;
+		dt.over = over;
+		dt.pause = pause;
 	}
 	@Override
 	public boolean onTouchEvent(MotionEvent event)
