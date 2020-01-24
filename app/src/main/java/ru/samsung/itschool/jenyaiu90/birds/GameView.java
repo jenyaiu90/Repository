@@ -32,20 +32,20 @@ public class GameView extends View
 	}
 
 	private int viewWidth, viewHeight;
-	private int points;
+	private int points = 0;
 	private Sprite playerBird, enemyBird;
 	private final int timerInterval = 30;
+	private boolean bonus, two;
+	private boolean over, pause;
+	private int level = 1;
 	public GameView(Context context)
 	{
 		super(context);
-		points = 0;
 		Bitmap b = BitmapFactory.decodeResource(getResources(), R.drawable.player);
-		int w = b.getWidth()/5;
-		int h = b.getHeight()/3;
+		int w = b.getWidth() / 5;
+		int h = b.getHeight() / 3;
 		Rect firstFrame = new Rect(0, 0, w, h);
 		playerBird = new Sprite(10, 0, 0, 100, firstFrame, b);
-		Timer timer = new Timer();
-		timer.start();
 		for (int i = 0; i < 3; i++)
 		{
 			for (int j = 0; j < 4; j++)
@@ -61,26 +61,9 @@ public class GameView extends View
 				playerBird.addFrame(new Rect(j * w, i * h, j * w + w, i * w + w));
 			}
 		}
-		b = BitmapFactory.decodeResource(getResources(), R.drawable.enemy);
-		w = b.getWidth() / 5;
-		h = b.getHeight() / 3;
-		firstFrame = new Rect(4 * w, 0, 5 * w, h);
-		enemyBird = new Sprite(2000, 250, -300, 0, firstFrame, b);
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 4; j >= 0; j--)
-			{
-				if (i == 0 && j == 4)
-				{
-					continue;
-				}
-				if (i == 2 && j == 0)
-				{
-					continue;
-				}
-				enemyBird.addFrame(new Rect(j * w, i * h, j * w + w, i * w + w));
-			}
-		}
+		teleportEnemy();
+		Timer timer = new Timer();
+		timer.start();
 	}
 	@Override
 	public void onSizeChanged(int w, int h, int oldw, int oldh)
@@ -97,14 +80,28 @@ public class GameView extends View
 		p.setAntiAlias(true);
 		p.setTextSize(55.f);
 		p.setColor(Color.WHITE);
-
 		canvas.drawARGB(250, 127, 199, 255);
 		playerBird.draw(canvas);
 		enemyBird.draw(canvas);
 		canvas.drawText(points + "", viewWidth - 100, 70, p);
+		canvas.drawText(level + "", 300, 70, p);
+		if (over)
+		{
+			canvas.drawText("Game over", 200, 200, p);
+		}
+		else if (pause)
+		{
+			canvas.drawText("Pause", 200, 200, p);
+		}
 	}
 	protected void update()
 	{
+		if (over) return;
+		if (pause)
+		{
+			invalidate();
+			return;
+		}
 		playerBird.update(timerInterval);
 		enemyBird.update(timerInterval);
 		invalidate();
@@ -122,13 +119,31 @@ public class GameView extends View
 		}
 		if (enemyBird.getX() < -enemyBird.getFrameWidth())
 		{
+			if (!bonus)
+			{
+				points += 10;
+			}
 			teleportEnemy();
-			points += 10;
 		}
 		if (enemyBird.intersect(playerBird))
 		{
-			teleportEnemy ();
-			points -= 40;
+			if (bonus)
+			{
+				points += 10;
+			}
+			else
+			{
+				points -= 40;
+			}
+			teleportEnemy();
+		}
+		if (points >= 50)
+		{
+			nextLevel();
+		}
+		else if (points <= -50)
+		{
+			over = true;
 		}
 	}
 	@Override
@@ -137,21 +152,92 @@ public class GameView extends View
 		int eventAction = event.getAction();
 		if (eventAction == MotionEvent.ACTION_DOWN)
 		{
-			if (event.getY() < playerBird.getBoundingBoxRect().top)
+			if (!bonus && two &&
+				event.getY() > enemyBird.getY() && event.getY() < enemyBird.getY() + enemyBird.getFrameHeight() &&
+				event.getX() > enemyBird.getX() && event.getX() < enemyBird.getX() + enemyBird.getFrameWidth())
 			{
-				playerBird.setVy(-100);
+				teleportEnemy();
+				points += 10;
+			}
+			else if (event.getY() > playerBird.getY() && event.getY() < playerBird.getY() + playerBird.getFrameHeight() &&
+				event.getX() > playerBird.getX() && event.getX() < playerBird.getX() + playerBird.getFrameWidth())
+			{
+				pause = !pause;
+			}
+			else if (event.getY() < playerBird.getBoundingBoxRect().top)
+			{
+				playerBird.setVy(-80 - 20 * level);
 				points--;
 			}
 			else if (event.getY() > (playerBird.getBoundingBoxRect().bottom))
 			{
-				playerBird.setVy(100);
+				playerBird.setVy(100 + 20 * level);
 				points--;
 			}
 		}
 		return true;
 	}
+	private void nextLevel()
+	{
+		points = 0;
+		level++;
+		if (playerBird.getVy() > 0)
+		{
+			playerBird.setVy(80 + 20 * level);
+		}
+		else
+		{
+			playerBird.setVy(-80 - 20 * level);
+		}
+		teleportEnemy();
+	}
 	private void teleportEnemy()
 	{
+		Bitmap b;
+		int h, w;
+		Rect firstFrame;
+		bonus = Math.random() * 2 < 1;
+		if (bonus)
+		{
+			b = BitmapFactory.decodeResource(getResources(), R.drawable.bonus);
+			w = b.getWidth();
+			h = b.getHeight();
+			firstFrame = new Rect(0, 0, w, h);
+		}
+		else
+		{
+			two = Math.random() * 2 < 1;
+			if (two)
+			{
+				b = BitmapFactory.decodeResource(getResources(), R.drawable.enemy2);
+			}
+			else
+			{
+				b = BitmapFactory.decodeResource(getResources(), R.drawable.enemy);
+			}
+			w = b.getWidth() / 5;
+			h = b.getHeight() / 3;
+			firstFrame = new Rect(4 * w, 0, 5 * w, h);
+		}
+		enemyBird = new Sprite(2000, 250, -340 - 60 * level, 0, firstFrame, b);
+		if (!bonus)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				for (int j = 4; j >= 0; j--)
+				{
+					if (i == 0 && j == 4)
+					{
+						continue;
+					}
+					if (i == 2 && j == 0)
+					{
+						continue;
+					}
+					enemyBird.addFrame(new Rect(j * w, i * h, j * w + w, i * w + w));
+				}
+			}
+		}
 		enemyBird.setX(viewWidth + Math.random() * 500);
 		enemyBird.setY(Math.random() * (viewHeight - enemyBird.getFrameHeight()));
 	}
