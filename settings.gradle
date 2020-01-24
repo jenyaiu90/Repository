@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name='CalcApp2'
+rootProject.name='Birds'
