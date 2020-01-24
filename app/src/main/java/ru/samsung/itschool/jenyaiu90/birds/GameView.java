@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.os.CountDownTimer;
 import android.view.MotionEvent;
@@ -13,255 +14,76 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 
-public class GameView extends SurfaceView implements SurfaceHolder.Callback
+public class GameView extends View
 {
-	class Timer extends CountDownTimer
-	{
-		public Timer()
-		{
-			super(Integer.MAX_VALUE, timerInterval);
-		}
-		@Override
-		public void onTick(long millisUntilFinished)
-		{
-			update();
-		}
-		@Override
-		public void onFinish()
-		{
-
-		}
-	}
-
-	private int viewWidth, viewHeight;
-	private int points = 0;
-	private Sprite playerBird, enemyBird;
-	private final int timerInterval = 30;
-	private boolean bonus, two;
-	private boolean over, pause;
-	private int level = 1;
-	private DrawThread dt;
-	@Override
-	public void surfaceCreated(SurfaceHolder holder)
-	{
-	}
-	@Override
-	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
-	{
-		// изменение размеров SurfaceView
-	}
-	@Override
-	public void surfaceDestroyed(SurfaceHolder holder)
-	{
-		dt.requestStop();
-		boolean retry = true;
-		while (retry)
-		{
-			try
-			{
-				dt.join();
-				retry = false;
-			}
-			catch (InterruptedException e)
-			{
-				//
-			}
-		}
-	}
 	public GameView(Context context)
 	{
 		super(context);
-		getHolder().addCallback(this);
-		Bitmap b = BitmapFactory.decodeResource(getResources(), R.drawable.player);
-		int w = b.getWidth() / 5;
-		int h = b.getHeight() / 3;
-		Rect firstFrame = new Rect(0, 0, w, h);
-		playerBird = new Sprite(10, 0, 0, 100, firstFrame, b);
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 4; j++)
-			{
-				if (i == 0 && j == 0)
-				{
-					continue;
-				}
-				if (i == 2 && j == 3)
-				{
-					continue;
-				}
-				playerBird.addFrame(new Rect(j * w, i * h, j * w + w, i * w + w));
-			}
-		}
-		teleportEnemy();
-		dt = new DrawThread(getContext(),getHolder());
-		dt.start();
-		Timer timer = new Timer();
-		timer.start();
-	}
-	@Override
-	public void onSizeChanged(int w, int h, int oldw, int oldh)
-	{
-		super.onSizeChanged(w, h, oldw, oldh);
-		viewWidth = w;
-		viewHeight = h;
 	}
 	@Override
 	public void onDraw(Canvas canvas)
 	{
 		super.onDraw(canvas);
-	}
-	protected void update()
-	{
-		if (over) return;
-		if (pause)
+		Paint p = new Paint();
+
+		p.setColor(Color.YELLOW);
+		p.setStyle(Paint.Style.FILL);
+		canvas.drawCircle(0, 0, 100, p);
+		for (double i = 0.1; i < Math.PI / 2; i += 0.2)
 		{
-			invalidate();
-			return;
+			canvas.drawLine(0, 0, (int)(300 * Math.sin(i)), (int)(300 * Math.cos(i)), p);
 		}
-		playerBird.update(timerInterval);
-		enemyBird.update(timerInterval);
-		invalidate();
-		if (playerBird.getY() + playerBird.getFrameHeight() > viewHeight)
+
+		p.setColor(Color.GREEN);
+		canvas.drawRect(0, getHeight() - 200, getWidth(), getHeight(), p);
+
+		p.setColor(Color.GRAY);
+		canvas.drawRect(getWidth() - 120, getHeight() - 75, getWidth() - 100, getHeight() - 25, p);
+		canvas.drawRect(getWidth() - 200, getHeight() - 75, getWidth() - 180, getHeight() - 25, p);
+		canvas.drawRect(getWidth() - 225, getHeight() - 95, getWidth() -  75, getHeight() - 75, p);
+
+		p.setColor(Color.rgb(150, 75, 0));
+		canvas.drawRect(getWidth() / 2 - 25, getHeight() - 200, getWidth() / 2 + 25, getHeight() - 50, p);
+		p.setColor(Color.rgb(0, 150, 0));
+		canvas.drawOval(getWidth() / 2 - 100, 100, getWidth() / 2 + 100, getHeight() - 150, p);
+
+		p.setColor(Color.rgb(150, 75, 0));
+		canvas.drawRect(100, getHeight() - 400, 500, getHeight() - 100, p);
+		Path path = new Path();
+		path.moveTo(100, getHeight() - 400);
+		path.lineTo(300, getHeight() - 600);
+		path.lineTo(500, getHeight() - 400);
+		path.close();
+		canvas.drawPath(path, p);
+
+		p.setColor(Color.WHITE);
+		for (int i = 100; i < 400; i += 25)
 		{
-			playerBird.setY(viewHeight - playerBird.getFrameHeight());
-			playerBird.setVy(-playerBird.getVy());
-			points--;
+			canvas.drawLine(350, getHeight() - i, 450, getHeight() - i + 100, p);
 		}
-		else if (playerBird.getY() < 0)
+		p.setColor(Color.GREEN);
+		canvas.drawRect(350, getHeight() - 100, 450, getHeight(), p);
+		p.setColor(Color.rgb(150, 75, 0));
+		canvas.drawRect(350, getHeight() - 400, 450, getHeight() - 300, p);
+		p.setColor(Color.BLACK);
+		p.setStyle(Paint.Style.STROKE);
+		canvas.drawRect(350, getHeight() - 300, 450, getHeight() - 100, p);
+
+		p.setColor(Color.BLUE);
+		for (int i = 10; i < 100; i += 20)
 		{
-			playerBird.setY(0);
-			playerBird.setVy(-playerBird.getVy());
-			points--;
+			canvas.drawLine(150 + i, getHeight() - 300, 150 + i, getHeight() - 200, p);
+			canvas.drawLine(150, getHeight() - 300 + i, 250, getHeight() - 300 + i, p);
 		}
-		if (enemyBird.getX() < -enemyBird.getFrameWidth())
+		p.setColor(Color.BLACK);
+		canvas.drawRect(150, getHeight() - 300, 250, getHeight() - 200, p);
+
+		p.setColor(Color.BLUE);
+		for (double i = Math.PI * 1.25; i > Math.PI * 0.25; i -= 0.2)
 		{
-			if (!bonus)
-			{
-				points += 10;
-			}
-			teleportEnemy();
+			canvas.drawLine((int)(300 + Math.cos(i) * 50), (int)(getHeight() - 500 + Math.sin(i) * 50), (int)(300 + Math.cos(Math.PI * 2.5 - i) * 50), (int)(getHeight() - 500 + Math.sin(Math.PI * 2.5 - i) * 50), p);
 		}
-		if (enemyBird.intersect(playerBird))
-		{
-			if (bonus)
-			{
-				points += 10;
-			}
-			else
-			{
-				points -= 40;
-			}
-			teleportEnemy();
-		}
-		if (points >= 50)
-		{
-			nextLevel();
-		}
-		else if (points <= -50)
-		{
-			over = true;
-		}
-		dt.playerBird = playerBird;
-		dt.enemyBird = enemyBird;
-		dt.points = points;
-		dt.viewWidth = viewWidth;
-		dt.level = level;
-		dt.over = over;
-		dt.pause = pause;
-	}
-	@Override
-	public boolean onTouchEvent(MotionEvent event)
-	{
-		int eventAction = event.getAction();
-		if (eventAction == MotionEvent.ACTION_DOWN)
-		{
-			if (!bonus && two &&
-				event.getY() > enemyBird.getY() && event.getY() < enemyBird.getY() + enemyBird.getFrameHeight() &&
-				event.getX() > enemyBird.getX() && event.getX() < enemyBird.getX() + enemyBird.getFrameWidth())
-			{
-				teleportEnemy();
-				points += 10;
-			}
-			else if (event.getY() > playerBird.getY() && event.getY() < playerBird.getY() + playerBird.getFrameHeight() &&
-				event.getX() > playerBird.getX() && event.getX() < playerBird.getX() + playerBird.getFrameWidth())
-			{
-				pause = !pause;
-			}
-			else if (event.getY() < playerBird.getBoundingBoxRect().top)
-			{
-				playerBird.setVy(-80 - 20 * level);
-				points--;
-			}
-			else if (event.getY() > (playerBird.getBoundingBoxRect().bottom))
-			{
-				playerBird.setVy(100 + 20 * level);
-				points--;
-			}
-		}
-		return true;
-	}
-	private void nextLevel()
-	{
-		points = 0;
-		level++;
-		if (playerBird.getVy() > 0)
-		{
-			playerBird.setVy(80 + 20 * level);
-		}
-		else
-		{
-			playerBird.setVy(-80 - 20 * level);
-		}
-		teleportEnemy();
-	}
-	private void teleportEnemy()
-	{
-		Bitmap b;
-		int h, w;
-		Rect firstFrame;
-		bonus = Math.random() * 2 < 1;
-		if (bonus)
-		{
-			b = BitmapFactory.decodeResource(getResources(), R.drawable.bonus);
-			w = b.getWidth();
-			h = b.getHeight();
-			firstFrame = new Rect(0, 0, w, h);
-		}
-		else
-		{
-			two = Math.random() * 2 < 1;
-			if (two)
-			{
-				b = BitmapFactory.decodeResource(getResources(), R.drawable.enemy2);
-			}
-			else
-			{
-				b = BitmapFactory.decodeResource(getResources(), R.drawable.enemy);
-			}
-			w = b.getWidth() / 5;
-			h = b.getHeight() / 3;
-			firstFrame = new Rect(4 * w, 0, 5 * w, h);
-		}
-		enemyBird = new Sprite(2000, 250, -340 - 60 * level, 0, firstFrame, b);
-		if (!bonus)
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				for (int j = 4; j >= 0; j--)
-				{
-					if (i == 0 && j == 4)
-					{
-						continue;
-					}
-					if (i == 2 && j == 0)
-					{
-						continue;
-					}
-					enemyBird.addFrame(new Rect(j * w, i * h, j * w + w, i * w + w));
-				}
-			}
-		}
-		enemyBird.setX(viewWidth + Math.random() * 500);
-		enemyBird.setY(Math.random() * (viewHeight - enemyBird.getFrameHeight()));
+		p.setColor(Color.BLACK);
+		canvas.drawCircle(300, getHeight() - 500, 50, p);
 	}
 }
